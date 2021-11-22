@@ -2,6 +2,7 @@ import os
 
 import ipdb
 import matplotlib
+import torch
 from tqdm import tqdm
 
 from utils.config import opt
@@ -14,6 +15,9 @@ from utils.vis_tool import visdom_bbox
 from utils.eval_tool import eval_detection_voc
 
 matplotlib.use('agg')
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def eval(dataloader, faster_rcnn, test_num=10000):
     pred_bboxes, pred_labels, pred_scores = list(), list(), list()
@@ -55,7 +59,7 @@ def train(**kwargs):
                                        )
     faster_rcnn = FasterRCNNVGG16()
     print('model construct completed')
-    trainer = FasterRCNNTrainer(faster_rcnn).cuda()
+    trainer = FasterRCNNTrainer(faster_rcnn).to(device)
     if opt.load_path:
         trainer.load(opt.load_path)
         print('load pretrained model from %s' % opt.load_path)
@@ -66,7 +70,7 @@ def train(**kwargs):
         trainer.reset_meters()
         for ii, (img, bbox_, label_, scale, ori_img) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
-            img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
+            img, bbox, label = img.to(device).float(), bbox_.to(device), label_.to(device)
             losses = trainer.train_step(img, bbox, label, scale)
 
             if (ii + 1) % opt.plot_every == 0:

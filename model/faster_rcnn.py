@@ -1,5 +1,6 @@
 from __future__ import  absolute_import
 from __future__ import division
+
 import torch as t
 import numpy as np
 from utils import array_tool as at
@@ -11,6 +12,8 @@ from torch import nn
 from data.dataset import preprocess
 from torch.nn import functional as F
 from utils.config import opt
+
+device = t.device('cuda' if t.cuda.is_available() else 'cpu')
 
 
 def nograd(f):
@@ -238,9 +241,9 @@ class FasterRCNN(nn.Module):
 
             # Convert predictions to bounding boxes in image coordinates.
             # Bounding boxes are scaled to the scale of the input images.
-            mean = t.Tensor(self.loc_normalize_mean).cuda(). \
+            mean = t.Tensor(self.loc_normalize_mean).to(device). \
                 repeat(self.n_class)[None]
-            std = t.Tensor(self.loc_normalize_std).cuda(). \
+            std = t.Tensor(self.loc_normalize_std).to(device). \
                 repeat(self.n_class)[None]
 
             roi_cls_loc = (roi_cls_loc * std + mean)

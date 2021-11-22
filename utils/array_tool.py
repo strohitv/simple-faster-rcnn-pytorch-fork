@@ -4,6 +4,8 @@ tools to convert specified type
 import torch as t
 import numpy as np
 
+device = t.device('cuda' if t.cuda.is_available() else 'cpu')
+
 
 def tonumpy(data):
     if isinstance(data, np.ndarray):
@@ -18,7 +20,7 @@ def totensor(data, cuda=True):
     if isinstance(data, t.Tensor):
         tensor = data.detach()
     if cuda:
-        tensor = tensor.cuda()
+        tensor = tensor.to(device)
     return tensor
 
 
