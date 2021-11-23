@@ -1,3 +1,7 @@
 .idea
 *.iml
 **_pycache__/
+
+VOC*
+VOC*/**
+nohup.out
