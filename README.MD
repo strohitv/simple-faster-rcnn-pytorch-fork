@@ -1,5 +1,60 @@
 # A Simple and Fast Implementation of Faster R-CNN
 
+# EDIT: Schritte zum Einrichten und Trainieren von Marco
+War nicht zufrieden mit der Anleitung weiter unten (ab 1. Introduction), also habe ich meine Schritte mal hier festgehalten.
+
+## 1. Vorbedingungen
+Benötigt werden:
+- Ein Linux-System, bzw. ein System, das Linux-exklusive Python3-Libraries nutzen kann, im spezifischen: das Modul 'resource', sonst kriegt man eine Fehlermeldung wie [diese hier](https://stackoverflow.com/questions/37710848/importerror-no-module-named-resource)
+- python3
+- pip
+- ihr habt euch dieses Projekt auf die Festplatte geklont
+
+## 2. Trainingsdaten runterladen
+Im root-Verzeichnis des geklonten Projektes werden nacheinander folgende Befehle ausgeführt:
+```Bash
+wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar
+wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar
+wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCdevkit_08-Jun-2007.tar
+tar xvf VOCtrainval_06-Nov-2007.tar
+tar xvf VOCtest_06-Nov-2007.tar
+tar xvf VOCdevkit_08-Jun-2007.tar
+```
+Damit werden die Trainingsdaten runtergeladen und entspackt. Danach solltet ihr einen Ordner `VOCdevkit` im root-Verzeichnis des Projekts haben. In diesem Ordner befinden sich weitere Ordner, z. B. `VOC2007`.
+
+Wenn diese Struktur so stimmt, sind die Trainingsdaten schon mal da. Der komplette VOCdevkit-Ordner (bzw. sogar alles, was mit VOC beginnt) wurde von mir ins .gitignore aufgenommen, damit ihr nicht komplett mit modifizierten Dateien zugemüllt werdet.
+
+Ihr könnt die Trainingsdaten auch woanders hin entpacken, dann müsst ihr allerdings in die Datei `utils/config.py` gehen und das Feld `voc_data_dir` anpassen, sodass es auf die korrekte Stelle zeigt.
+
+## 3. Projekt einrichten und Training vorbereiten
+Requirements installieren:
+```Bash
+pip install -r requirements.txt
+```
+
+Sobald die Installation abgeschlossen ist, könnt ihr den visdom-Server starten, denn während des Trainings hostet dieses Projekt sogar eine lokale Website mit Statistiken zum Training.
+```Bash
+nohup python -m visdom.server &
+```
+
+## 4. Training starten
+Einstellungen, um das Training anzupassen, können in der `utils/config.py` getroffen werden. Das ist aber mMn schon alles gut eingestellt.  
+Einzig die Felder `num_workers` und `test_num_workers` könnten mit anderen Werten besser wirken: Ursprünglich waren beide auf 8, empfohlen werden maximal 4, aber da ich CPU und nicht CUDA verwende, habe ich sie vorerst auf 1 gesetzt.
+
+Das Projekt wurde von mir in Commit `5705a5726ce499422e201f2fc1cbd7a16fe799d8` umgeschrieben, sodass geschaut wird, ob die cuda-Bibliothek vorhanden ist, und falls ja, soll diese genommen werden, ansonsten CPU. Ob es weiterhin mit CUDA läuft, kann ich mangels nVidia-Grafikkarte nicht nachvollziehen, es sollte aber gehen.
+
+Das Training lässt sich mit diesem Befehl starten: 
+```Bash
+python train.py train
+```
+
+Sobald das Training gestartet wurde, könnt ihr unter http://localhost:8097/ den aktuellen Stand einsehen. Wenn die Seite bei euch leer bleibt, müsst ihr oben auf das Feld `Environment` klicken und dann `main` abwählen und `faster-rcnn` auswählen. Das geht erst, wenn euch beim Trainings-Output angezeigt wird, dass er mindestens bei Iteration 40 war (letzte Zeile beginnt mit `40it` oder einer höheren Zahl), da die Webseite nur alle 40 Iterationen aktualisiert wird.
+
+
+
+# Alte Beschreibung, die zum Projekt dazugehört hat:
+Ich fand sie schlecht, also hab ich meine eigene geschrieben. :D
+
 ## 1. Introduction
 
 **[Update:]** I've further simplified the code to pytorch 1.5, torchvision 0.6, and replace the customized ops roipool and nms with the one from torchvision.  if you want the old version code, please checkout branch [v1.0](https://github.com/chenyuntc/simple-faster-rcnn-pytorch/tree/v1.0)
